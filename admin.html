@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Dashboard</title>
+  <style>
+    :root{
+      --bg:#0f172a;         /* slate-900 */
+      --panel:#111827;      /* gray-900 */
+      --panel-2:#0b1220;    /* darker */
+      --text:#e5e7eb;       /* gray-200 */
+      --muted:#94a3b8;      /* slate-400 */
+      --brand:#6366f1;      /* indigo-500 */
+      --accent:#22c55e;     /* green-500 */
+      --danger:#ef4444;     /* red-500 */
+      --warn:#f59e0b;       /* amber-500 */
+      --card:#111827;
+      --border:#1f2937;     /* gray-800 */
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background:linear-gradient(180deg,var(--bg),#0b1020);
+      color:var(--text);
+    }
+    a{color:inherit;text-decoration:none}
+    .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+    .sidebar{
+      background:linear-gradient(180deg,var(--panel),var(--panel-2));
+      border-right:1px solid var(--border);
+      padding:18px 14px;
+      position:sticky;top:0;height:100vh;overflow:auto
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
+    .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 25px var(--brand)}
+    .section-title{margin:18px 8px 8px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+    .nav{display:grid;gap:6px}
+    .nav a{
+      display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--text);
+      border:1px solid transparent
+    }
+    .nav a:hover{background:#0f172a;border-color:var(--border)}
+    .nav a.active{background:#0b1220;border-color:var(--brand);box-shadow:inset 0 0 0 1px rgba(99,102,241,.35)}
+    .nav .badge{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.35)}
+
+    .main{display:grid;grid-template-rows:auto 1fr;min-width:0}
+    .topbar{
+      display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);
+      position:sticky;top:0;background:rgba(17,24,39,.7);backdrop-filter:blur(10px);z-index:10
+    }
+    .search{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:#0b1220;border:1px solid var(--border);min-width:260px;flex:1}
+    .search input{all:unset;flex:1;color:var(--text)}
+    .actions{display:flex;align-items:center;gap:10px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:12px;border:1px solid var(--border);background:#0b1220;color:var(--text);cursor:pointer}
+    .btn.primary{background:linear-gradient(180deg,#6366f1,#4f46e5);border-color:#4f46e5}
+
+    .content{padding:20px;display:grid;gap:16px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)}
+    .card .inner{padding:16px}
+
+    .kpi{display:flex;align-items:center;justify-content:space-between}
+    .kpi .label{color:var(--muted);font-size:12px}
+    .kpi .value{font-size:28px;font-weight:700}
+    .kpi .trend{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(34,197,94,.35);background:rgba(34,197,94,.12)}
+    .kpi .trend.down{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.12)}
+
+    .progress{height:8px;background:#0b1220;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+    .progress > span{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#16a34a)}
+
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px;border-bottom:1px solid var(--border)}
+    th{color:var(--muted);font-weight:600;text-align:left;font-size:12px}
+    tr:hover td{background:#0b1220}
+    .status{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--border)}
+    .status.paid{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35)}
+    .status.pending{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.35)}
+    .status.failed{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35)}
+
+    .footer{padding:20px;color:var(--muted);font-size:12px}
+
+    /* responsive */
+    .mobile-toggle{display:none}
+    @media (max-width: 980px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:fixed;inset:0 35% 0 0;transform:translateX(-100%);transition:transform .25s ease;z-index:50}
+      .sidebar.open{transform:translateX(0)}
+      .overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none}
+      .overlay.show{display:block}
+      .mobile-toggle{display:inline-flex}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="dot"></span> Admin<span style="opacity:.7">Desk</span></div>
+      <div class="section-title">Main</div>
+      <nav class="nav">
+        <a class="active" href="#"><span>🏠</span> Overview</a>
+        <a href="#"><span>📦</span> Orders <span class="badge">12</span></a>
+        <a href="#"><span>👥</span> Customers</a>
+        <a href="#"><span>📊</span> Reports</a>
+      </nav>
+      <div class="section-title">Settings</div>
+      <nav class="nav">
+        <a href="#"><span>⚙️</span> General</a>
+        <a href="#"><span>🔒</span> Roles</a>
+        <a href="#"><span>🚪</span> Logout</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <header class="topbar">
+        <button class="btn mobile-toggle" id="openSidebar">☰</button>
+        <div class="search">
+          🔎 <input placeholder="Search…" />
+        </div>
+        <div class="actions">
+          <button class="btn" id="themeBtn">🌓 Theme</button>
+          <button class="btn primary">+ New</button>
+          <div class="avatar" title="You" style="width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,#22c55e,#16a34a);display:inline-grid;place-items:center;font-weight:700">Y</div>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- KPI CARDS -->
+        <section class="grid">
+          <div class="card" style="grid-column: span 3;">
+            <div class="inner kpi">
+              <div>
+                <div class="label">Total Sales</div>
+                <div class="value">$42,980</div>
+              </div>
+              <div class="trend">▲ 12.4%</div>
+            </div>
+            <div class="inner">
+              <div class="progress"><span style="width:72%"></span></div>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 3;">
+            <div class="inner kpi">
+              <div>
+                <div class="label">Orders</div>
+                <div class="value">1,284</div>
+              </div>
+              <div class="trend">▲ 4.1%</div>
+            </div>
+            <div class="inner">
+              <div class="progress"><span style="width:54%"></span></div>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 3;">
+            <div class="inner kpi">
+              <div>
+                <div class="label">Customers</div>
+                <div class="value">8,912</div>
+              </div>
+              <div class="trend down">▼ 1.2%</div>
+            </div>
+            <div class="inner">
+              <div class="progress"><span style="width:38%;background:linear-gradient(90deg,#ef4444,#b91c1c)"></span></div>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 3;">
+            <div class="inner kpi">
+              <div>
+                <div class="label">Refunds</div>
+                <div class="value">$1,120</div>
+              </div>
+              <div class="trend down">▼ 0.4%</div>
+            </div>
+            <div class="inner">
+              <div class="progress"><span style="width:22%;background:linear-gradient(90deg,#f59e0b,#b45309)"></span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TABLE + ACTIVITY -->
+        <section class="grid">
+          <div class="card" style="grid-column: span 8;">
+            <div class="inner">
+              <h3 style="margin:0 0 8px">Recent Orders</h3>
+              <table>
+                <thead>
+                  <tr><th>Order #</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th></tr>
+                </thead>
+                <tbody id="ordersBody">
+                  <!-- rows injected via JS below -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 4;">
+            <div class="inner">
+              <h3 style="margin:0 0 8px">Activity</h3>
+              <ul id="activity" style="list-style:none;padding:0;margin:0;display:grid;gap:10px"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- FOOTER -->
+        <div class="footer">© <span id="year"></span> AdminDesk • Built with plain HTML/CSS/JS. Replace dummy data with your API.</div>
+      </main>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+
+  <script>
+    // Demo data (replace with your real data after login)
+    const orders = [
+      { id: '#1024', name: 'Ananya P.', date: '2025-09-02', amount: 259.00, status: 'Paid' },
+      { id: '#1023', name: 'Vikram S.', date: '2025-09-01', amount: 89.99, status: 'Pending' },
+      { id: '#1022', name: 'Meera K.',  date: '2025-08-31', amount: 120.49, status: 'Paid' },
+      { id: '#1021', name: 'Rahul D.',  date: '2025-08-30', amount: 48.00, status: 'Failed' },
+      { id: '#1020', name: 'Sara L.',   date: '2025-08-28', amount: 640.00, status: 'Paid' },
+    ];
+
+    const activities = [
+      { t: 'New user signed up', at: '2m ago' },
+      { t: 'Order #1024 marked Paid', at: '1h ago' },
+      { t: 'Low stock on SKU-AX92', at: '3h ago' },
+      { t: 'Weekly report generated', at: 'Yesterday' },
+    ];
+
+    const ordersBody = document.getElementById('ordersBody');
+    const act = document.getElementById('activity');
+    const fmt = n => new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(n);
+
+    orders.forEach(o => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${o.id}</td>
+        <td>${o.name}</td>
+        <td>${new Date(o.date).toLocaleDateString()}</td>
+        <td>${fmt(o.amount)}</td>
+        <td><span class="status ${o.status.toLowerCase()}">${o.status}</span></td>
+      `;
+      ordersBody.appendChild(tr);
+    });
+
+    activities.forEach(a => {
+      const li = document.createElement('li');
+      li.style.display='grid';
+      li.style.gridTemplateColumns='24px 1fr auto';
+      li.style.alignItems='center';
+      li.style.gap='10px';
+      li.innerHTML = `<span>•</span><span>${a.t}</span><span style="color:var(--muted)">${a.at}</span>`;
+      act.appendChild(li);
+    });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Mobile sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const openBtn = document.getElementById('openSidebar');
+    openBtn?.addEventListener('click', () => {
+      sidebar.classList.add('open');
+      overlay.classList.add('show');
+    });
+    overlay?.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+
+    // Simple theme switch (light/dark)
+    const themeBtn = document.getElementById('themeBtn');
+    let dark = true;
+    themeBtn.addEventListener('click', () => {
+      dark = !dark;
+      document.documentElement.style.setProperty('--bg', dark ? '#0f172a' : '#0b1020');
+      document.documentElement.style.setProperty('--panel', dark ? '#111827' : '#0e1627');
+      document.documentElement.style.setProperty('--panel-2', dark ? '#0b1220' : '#09101d');
+      document.body.style.background = dark 
+        ? 'linear-gradient(180deg,var(--bg),#0b1020)' 
+        : 'linear-gradient(180deg,#0b1020,#0b1020)';
+    });
+  </script>
+</body>
+</html>

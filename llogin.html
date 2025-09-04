@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>KwikSell – Admin Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen grid place-items-center bg-gray-50 text-gray-900">
+  <main class="w-[92%] max-w-sm rounded-2xl border bg-white p-6 shadow-sm">
+    <h1 class="text-xl font-semibold mb-1">Admin Login</h1>
+    <p class="text-sm text-gray-500 mb-4">Sign in with your admin account.</p>
+
+    <form id="form" class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium mb-1" for="email">Email</label>
+        <input id="email" type="email" required class="w-full rounded-xl border px-3 py-2 text-sm" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1" for="password">Password</label>
+        <input id="password" type="password" required class="w-full rounded-xl border px-3 py-2 text-sm" />
+      </div>
+      <button class="w-full rounded-xl bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800">
+        Sign in
+      </button>
+      <button id="reset" type="button" class="text-xs underline mt-2">Forgot password?</button>
+      <p id="error" class="text-sm text-red-600 hidden mt-2"></p>
+    </form>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyD10-5TP4sSz10XimQOTTBQTxGRETffCRA",
+  authDomain: "kwiksell-a8774.firebaseapp.com",
+  databaseURL: "https://kwiksell-a8774-default-rtdb.firebaseio.com",
+  projectId: "kwiksell-a8774",
+  storageBucket: "kwiksell-a8774.firebasestorage.app",
+  messagingSenderId: "864464930391",
+  appId: "1:864464930391:web:50e8fa0e462ee6196ac512",
+  measurementId: "G-GMMD5TBG3M"
+};
+
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const errorEl = document.getElementById('error');
+
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.classList.add('hidden');
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        const next = new URLSearchParams(location.search).get('next') || 'admin.html';
+        location.href = next;
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('reset').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      if (!email) { alert("Enter your email above, then click reset."); return; }
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent.");
+    });
+
+    
+  </script>
+</body>
+</html>
